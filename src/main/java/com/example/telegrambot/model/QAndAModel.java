@@ -1,7 +1,11 @@
 package com.example.telegrambot.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 
@@ -10,7 +14,8 @@ import java.util.UUID;
 public class QAndAModel {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY) // This is for numeric id
+    @GeneratedValue
     private UUID id;
 
     @Column(unique = true)
@@ -22,6 +27,14 @@ public class QAndAModel {
     @ManyToOne
     @JoinColumn(name = "module_id", referencedColumnName = "id") // Specifies the foreign key column
     private ModuleModel moduleModel;
+
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
 
     // No-argument constructor (required by JPA)
     public QAndAModel() {
@@ -40,7 +53,6 @@ public class QAndAModel {
     public UUID getId() {
         return id;
     }
-
     public void setId(UUID id) {
         this.id = id;
     }
@@ -48,7 +60,6 @@ public class QAndAModel {
     public String getQuestionCode() {
         return questionCode;
     }
-
     public void setQuestionCode(String questionCode) {
         this.questionCode = questionCode;
     }
@@ -56,7 +67,6 @@ public class QAndAModel {
     public String getQuestion() {
         return question;
     }
-
     public void setQuestion(String question) {
         this.question = question;
     }
@@ -64,7 +74,6 @@ public class QAndAModel {
     public String getAnswer() {
         return answer;
     }
-
     public void setAnswer(String answer) {
         this.answer = answer;
     }
@@ -72,13 +81,14 @@ public class QAndAModel {
     public ModuleModel getModule() {
         return moduleModel;
     }
-
     public void setModule(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
     }
 
-    // Optional: Override toString, equals, and hashCode methods if needed
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public OffsetDateTime getUpdatedAt() { return updatedAt; }
 
+    // Optional: Override toString, equals, and hashCode methods if needed
     @Override
     public String toString() {
         return "QAndAModel{" +
@@ -87,6 +97,8 @@ public class QAndAModel {
                 ", question='" + question + '\'' +
                 ", answer='" + answer + '\'' +
                 ", module=" + moduleModel +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
                 '}';
     }
 

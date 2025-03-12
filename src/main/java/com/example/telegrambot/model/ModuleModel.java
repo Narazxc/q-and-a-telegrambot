@@ -2,7 +2,11 @@ package com.example.telegrambot.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 
@@ -11,22 +15,24 @@ import java.util.UUID;
 public class ModuleModel {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY) // This is for numeric id
+    @GeneratedValue
     private UUID id;
+
     @Column(unique = true)
-//    @NotBlank(message = "Name cannot be empty")
+    @NotBlank(message = "Name cannot be empty")
     private String name;
+
     @Column(name = "full_name") // Explicit mapping
     private String fullName = "";
 
-    @Override
-    public String toString() {
-        return "ModuleModel{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", fullName='" + fullName + '\'' +
-                '}';
-    }
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
 
 
     // No-argument constructor (required by JPA)
@@ -40,20 +46,16 @@ public class ModuleModel {
     }
 
     // Getters and Setters
-
     public String getFullName() {
         return fullName;
     }
-
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
 
-
     public UUID getId() {
         return id;
     }
-
     public void setId(UUID id) {
         this.id = id;
     }
@@ -61,9 +63,22 @@ public class ModuleModel {
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
+    }
+
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public OffsetDateTime getUpdatedAt() { return updatedAt; }
+
+    @Override
+    public String toString() {
+        return "ModuleModel{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
     }
 
 
@@ -78,8 +93,6 @@ public class ModuleModel {
     @Override
     public int hashCode() { return id.hashCode(); }
 }
-
-
 //    public List<QAndAModel> getQAndAs() {
 //        return qAndAs;
 //    }

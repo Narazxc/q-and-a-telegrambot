@@ -1,9 +1,9 @@
 package com.example.telegrambot.util;
 
-import com.example.telegrambot.Exception.Module.DuplicateModuleNameException;
-import com.example.telegrambot.Exception.Module.ModuleNotFoundException;
-import com.example.telegrambot.Exception.QAndA.DuplicateQAndACodeException;
-import com.example.telegrambot.Exception.QAndA.QAndANotFoundException;
+import com.example.telegrambot.exception.Module.DuplicateModuleNameException;
+import com.example.telegrambot.exception.Module.ModuleNotFoundException;
+import com.example.telegrambot.exception.QAndA.DuplicateQAndACodeException;
+import com.example.telegrambot.exception.QAndA.QAndANotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -76,7 +76,6 @@ public class GlobalExceptionHandler {
         ApiResponse<Map<String, String>> response = new ApiResponse<>("Validation Error", errors);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
-
 
 }
 

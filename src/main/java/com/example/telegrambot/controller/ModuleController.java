@@ -24,10 +24,10 @@ public class ModuleController {
     }
 
     // Get all module
-    @GetMapping("")
+    @GetMapping
     public ResponseEntity<ApiResponse<List<ModuleModel>>> getAllModules() {
         List<ModuleModel> modules  = moduleService.getAllModules();
-        return ResponseEntity.status(HttpStatus.OK).body( new ApiResponse<>("Success", modules));
+        return ResponseEntity.status(HttpStatus.OK).body( new ApiResponse<>("success", modules));
     }
 
     // Get module by id
@@ -36,14 +36,14 @@ public class ModuleController {
         Optional<ModuleModel> moduleModel = moduleService.findModuleById(id);
 
 
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("Success", moduleModel));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("success", moduleModel));
     }
 
     // Create a new module
     @PostMapping
     public ResponseEntity<ApiResponse<ModuleModel>> createModule(@Valid @RequestBody ModuleModel moduleModel) {
         ModuleModel savedModule = moduleService.createModule(moduleModel);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>("Success", savedModule));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>("success", savedModule));
     }
 
     // Update an existing module
@@ -51,7 +51,7 @@ public class ModuleController {
     public ResponseEntity<ApiResponse<ModuleModel>> updateModule(@PathVariable UUID id, @RequestBody ModuleModel newModuleData) {
 
         ModuleModel module = moduleService.updateModule(id, newModuleData);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("Success", module));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("success", module));
     }
 
     // Delete a module by ID

@@ -1,4 +1,4 @@
-package com.example.telegrambot.Exception.Module;
+package com.example.telegrambot.exception.Module;
 
 import java.util.UUID;
 

@@ -24,7 +24,6 @@ public class BotConfig {
     public BotConfig(TelegramBot telegramBot) {
         this.telegramBot = telegramBot;
     }
-
 //    @Async
 //    @PostConstruct // Runs automatically when the application starts
 //    public void startBot() {
@@ -36,6 +35,7 @@ public class BotConfig {
 //            e.printStackTrace();
 //        }
 //    }
+
     @Async
     @PostConstruct
     public void startBot() {

@@ -1,4 +1,4 @@
-package com.example.telegrambot.Exception.Module;
+package com.example.telegrambot.exception.Module;
 
 public class DuplicateModuleNameException extends RuntimeException {
   public DuplicateModuleNameException(String moduleName) {

@@ -4,10 +4,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.example.telegrambot.Exception.Module.DuplicateModuleNameException;
-import com.example.telegrambot.Exception.Module.ModuleNotFoundException;
+import com.example.telegrambot.exception.Module.DuplicateModuleNameException;
+import com.example.telegrambot.exception.Module.ModuleNotFoundException;
 import com.example.telegrambot.model.ModuleModel;
 import com.example.telegrambot.repository.ModuleRepository;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,7 @@ public class ModuleService {
 
     // Get all modules
     public List<ModuleModel> getAllModules() {
-        return moduleRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
+        return moduleRepository.findAll(Sort.by(Sort.Direction.ASC, "createdAt"));
     }
 
     // Get module by ID
@@ -35,7 +36,7 @@ public class ModuleService {
     }
 
 
-    public ModuleModel createModule(ModuleModel moduleModel) {
+    public ModuleModel createModule(@Valid ModuleModel moduleModel) {
         if (moduleRepository.existsByName(moduleModel.getName())) { // Assume this method exists
             throw new DuplicateModuleNameException(moduleModel.getName());
         }
@@ -44,11 +45,13 @@ public class ModuleService {
 
     // Update an existing module
     public ModuleModel updateModule(UUID id, ModuleModel newModuleData) {
+
+        // Check if this module actually exist
         if (!moduleRepository.existsById(id)) {
-            throw new ModuleNotFoundException(id); // If the module doesn't exist, throw an error
+            throw new ModuleNotFoundException(id);
         }
 
-        // Check if the name already exists (excluding the current module)
+        // Check if the name already used to avoid duplicate module name (excluding the current module)
         if (moduleRepository.existsByName(newModuleData.getName())) {
             throw new DuplicateModuleNameException(newModuleData.getName());
         }
@@ -65,7 +68,7 @@ public class ModuleService {
             existingModule.setFullName(newModuleData.getFullName());
         }
 
-        newModuleData.setId(id);
+//        newModuleData.setId(id);
         return moduleRepository.save(existingModule);
     }
 

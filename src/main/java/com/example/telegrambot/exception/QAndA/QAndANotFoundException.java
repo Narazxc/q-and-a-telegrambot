@@ -1,4 +1,4 @@
-package com.example.telegrambot.Exception.QAndA;
+package com.example.telegrambot.exception.QAndA;
 
 import java.util.UUID;
 
