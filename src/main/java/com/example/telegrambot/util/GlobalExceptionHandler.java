@@ -32,32 +32,32 @@ public class GlobalExceptionHandler {
     // Handle Duplicate Key (Unique Constraint) Errors
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<String>> handleDuplicateKeyException(DataIntegrityViolationException ex) {
-        ApiResponse<String> response = new ApiResponse<>("Error", "This value already exists. Please use a different one.");
+        ApiResponse<String> response = new ApiResponse<>("error", "This value already exists. Please use a different one.");
         return new ResponseEntity<>(response, HttpStatus.CONFLICT); // 409 Conflict
     }
 
     @ExceptionHandler(DuplicateModuleNameException.class)
     public ResponseEntity<ApiResponse<String>> handleDuplicateModuleNameException(DuplicateModuleNameException ex) {
-        ApiResponse<String> response = new ApiResponse<>("Error", ex.getMessage());
+        ApiResponse<String> response = new ApiResponse<>("error", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.CONFLICT); // 409 Conflict
     }
 
     @ExceptionHandler(ModuleNotFoundException.class)
     public ResponseEntity<ApiResponse<String>> handleModuleNotFoundException(ModuleNotFoundException ex) {
-        ApiResponse<String> response = new ApiResponse<>("Error", ex.getMessage());
+        ApiResponse<String> response = new ApiResponse<>("error", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
 //    Q And A
     @ExceptionHandler(DuplicateQAndACodeException.class)
     public ResponseEntity<ApiResponse<String>> handleDuplicateQAndACodeException(DuplicateQAndACodeException ex) {
-        ApiResponse<String> response = new ApiResponse<>("Error", ex.getMessage());
+        ApiResponse<String> response = new ApiResponse<>("error", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(QAndANotFoundException.class)
     public ResponseEntity<ApiResponse<String>> handleQAndANotFoundException(QAndANotFoundException ex) {
-        ApiResponse<String> response = new ApiResponse<>("Error", ex.getMessage());
+        ApiResponse<String> response = new ApiResponse<>("error", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 

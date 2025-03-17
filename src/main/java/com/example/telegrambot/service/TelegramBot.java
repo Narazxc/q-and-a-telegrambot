@@ -59,6 +59,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         return botToken;
     }
 
+    // handle normal text
     private void handleTextMessage(Message message) {
         String text = message.getText();
         String chatId = message.getChatId().toString();
@@ -71,6 +72,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    // handle string that starts with /
     private  void handleCommand(String chatId, String messageText) {
 
         switch (messageText.toLowerCase()) {

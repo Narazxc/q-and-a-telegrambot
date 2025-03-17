@@ -1,8 +1,6 @@
 package com.example.telegrambot.service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.example.telegrambot.exception.Module.ModuleNotFoundException;
@@ -39,9 +37,9 @@ public class QAndAService {
                         q.getQuestionCode(),
                         q.getQuestion(),
                         q.getAnswer(),
-                        (q.getModule() != null) ? q.getModule().getName() : "Unknown Module", // Handle null module
+                        (q.getModule() != null) ? q.getModule().getName() : "", // Handle null module
                         (q.getModule() != null) ? q.getModule().getId() : null,  // Handle null module_id
-                        q.getModule().getFullName(),
+                        (q.getModule() != null) ? q.getModule().getFullName() : "",
                         q.getCreatedAt(),
                         q.getUpdatedAt()
                 ))
@@ -69,11 +67,11 @@ public class QAndAService {
         QAndAResponseDTO qAndAResponseDTO = new QAndAResponseDTO(
                 qAndA.getId(),
                 qAndA.getQuestionCode(),
+                qAndA.getQuestion(),
                 qAndA.getAnswer(),
-                (qAndA.getModule() != null) ? qAndA.getModule().getName() : "Unknown Module", // Handle null module
-                (qAndA.getModule() != null) ? String.valueOf(qAndA.getModule().getId()) : null,  // Handle null module_id
-                qAndA.getModule().getId(),
-                qAndA.getModule().getFullName(),
+                (qAndA.getModule() != null) ? qAndA.getModule().getName() : "", // Handle null module
+                (qAndA.getModule() != null) ? qAndA.getModule().getId() : null,  // Handle null module_id
+                (qAndA.getModule() != null) ? qAndA.getModule().getFullName() : "",
                 qAndA.getCreatedAt(),
                 qAndA.getUpdatedAt()
 
@@ -91,9 +89,9 @@ public class QAndAService {
                         q.getQuestionCode(),
                         q.getQuestion(),
                         q.getAnswer(),
-                        (q.getModule() != null) ? q.getModule().getName() : "Unknown Module", // Handle null module
+                        (q.getModule() != null) ? q.getModule().getName() : "", // Handle null module
                         (q.getModule() != null) ? q.getModule().getId() : null,  // Handle null module_id
-                        q.getModule().getFullName(),
+                        (q.getModule() != null) ? q.getModule().getFullName() : "",
                         q.getCreatedAt(),
                         q.getUpdatedAt()
                 ))
@@ -226,56 +224,130 @@ public class QAndAService {
         qAndARepository.deleteById(id);
     }
 
-//    public List<QAndAResponseDTO> createQAndAs(List<QAndADTO> qAndADTOs) {
-//        // Extract all moduleIds
-//        Set<UUID> moduleIds = qAndADTOs.stream()
-//                .map(QAndADTO::moduleId)
-//                .collect(Collectors.toSet());
+    public List<QAndAResponseDTO> createQAndAs(List<QAndADTO> qAndADTOs) {
+
+        // console log
+        System.out.println("List of qAndA dtos:");
+        qAndADTOs.forEach(dto -> System.out.println(dto));
+
+
+        // An array
+        List<QAndAModel> entities = new ArrayList<>();
+
+        for (QAndADTO dto : qAndADTOs) {
+            QAndAModel entity = new QAndAModel();
+            entity.setQuestionCode(dto.questionCode());
+            entity.setQuestion(dto.question());
+            entity.setAnswer(dto.answer());
+
+            // Find and set module by ID
+            if (dto.moduleId() != null) {
+                // You MUST query the module
+                Optional<ModuleModel> moduleOptional = moduleRepository.findById(dto.moduleId());
+
+                if (moduleOptional.isPresent()) {
+                    ModuleModel module = moduleOptional.get();
+                    entity.setModule(module); // Set the entire module object
+                } else {
+                    // Handle module not found case
+                    System.out.println("Module not found with ID: " + dto.moduleId());
+                    // You might want to log this or handle it differently
+                }
+            }
+
+            // Add entity to list regardless of module status
+            entities.add(entity);
+        }
+
+        // log entities at the end
+        entities.forEach(en -> System.out.println("log entities :" + en));
+
+
+        try {
+            // Save all entities
+            List<QAndAModel> savedEntities = qAndARepository.saveAll(entities);
+
+            // Convert to response DTOs / map to DTO
+            List<QAndAResponseDTO> responseDTOs = savedEntities.stream()
+                    .map(entity -> new QAndAResponseDTO(
+                            entity.getId(),
+                            entity.getQuestionCode(),
+                            entity.getQuestion(),
+                            entity.getAnswer(),
+                            (entity.getModule() != null) ? entity.getModule().getName() : "",
+                            entity.getModule() != null ? entity.getModule().getId() : null,
+                            entity.getModule() != null ? entity.getModule().getFullName() : "",
+                            entity.getCreatedAt(),
+                            entity.getUpdatedAt()
+                    ))
+                    .collect(Collectors.toList());
+
+            responseDTOs.forEach(res -> System.out.println("res :" + res));
+
+            return responseDTOs;
+
+        } catch (Exception e) {
+
+            // Extract question code
+            String questionCode = extractQuestionCode(e.getMessage());
+
+            throw new DuplicateQAndACodeException("Q and A with " + questionCode + " already exist, Please input new question code");
+        }
+    }
+
+    public String extractQuestionCode(String errorMessage) {
+        String questionCode = null;
+
+        // Check if the message contains the detail about question_code
+        if (errorMessage.contains("question_code")) {
+            // Extract the content between "=(" and ")"
+            int startIndex = errorMessage.indexOf("=(") + 2;
+            int endIndex = errorMessage.indexOf(")", startIndex);
+
+            if (startIndex >= 0 && endIndex >= 0) {
+                questionCode = errorMessage.substring(startIndex, endIndex);
+            }
+        }
+
+        return questionCode; // Will return "PR001"
+    }
+}
+
+
+//        // check one by one for duplication?
 //
-//        // Fetch all required modules in one query
-//        List<ModuleModel> modules = moduleRepository.findAllById(moduleIds);
-//
-//        // Create a map for quick module lookup
-//        Map<UUID, ModuleModel> moduleMap = modules.stream()
-//                .collect(Collectors.toMap(ModuleModel::getId, module -> module));
-//
-//        // Check if all moduleIds exist
-//        Set<UUID> foundModuleIds = moduleMap.keySet();
-//        moduleIds.stream()
-//                .filter(id -> !foundModuleIds.contains(id))
-//                .findFirst()
-//                .ifPresent(id -> {
-//                    throw new ModuleNotFoundException(id);
-//                });
-//
-//        // Create entities using the module map
-//        List<QAndAModel> qAndAEntities = qAndADTOs.stream()
+//        //  insert into db
+//        // Convert DTOs to entities
+//        List<QAndAModel> entities = qAndADTOs.stream()
 //                .map(dto -> {
-//                    ModuleModel moduleModel = moduleMap.get(dto.moduleId());
-//                    QAndAModel newQuestion = new QAndAModel();
-//                    newQuestion.setQuestionCode(dto.questionCode());
-//                    newQuestion.setQuestion(dto.question());
-//                    newQuestion.setAnswer(dto.answer());
-//                    newQuestion.setModule(moduleModel);
-//                    return newQuestion;
+//                    QAndAModel entity = new QAndAModel();
+//                    entity.setQuestionCode(dto.questionCode());
+//                    entity.setQuestion(dto.question());
+//                    entity.setAnswer(dto.answer());
+////                    entity.set(dto.fullName());
+////                    entity.set(dto.moduleId());
+//                    // Set other fields as needed
+//                    return entity;
 //                })
 //                .collect(Collectors.toList());
 //
-//        // Save all entities in one batch operation
-//        List<QAndAModel> savedEntities = qAndARepository.saveAll(qAndAEntities);
+//        // Save entities
+//        List<QAndAModel> savedEntities = qAndARepository.saveAll(entities);
 //
-//        // Convert saved entities to DTOs
+//        // Convert saved entities back to response DTOs
 //        List<QAndAResponseDTO> responseDTOs = savedEntities.stream()
 //                .map(entity -> new QAndAResponseDTO(
 //                        entity.getId(),
 //                        entity.getQuestionCode(),
 //                        entity.getQuestion(),
 //                        entity.getAnswer(),
+//                        entity.getModule().getFullName(),
+//                        entity.getModule().getId(), // Assuming this comes from the entity
 //                        entity.getModule().getName(),
-//                        entity.getModule().getId() // Make sure this matches your field name
+//                        entity.getCreatedAt(),
+//                        entity.getUpdatedAt()
 //                ))
 //                .collect(Collectors.toList());
 //
 //        return responseDTOs;
-//    }
-}
+// ======================================================================

@@ -24,7 +24,7 @@ public class ModuleController {
     }
 
     // Get all module
-    @GetMapping
+    @GetMapping("")
     public ResponseEntity<ApiResponse<List<ModuleModel>>> getAllModules() {
         List<ModuleModel> modules  = moduleService.getAllModules();
         return ResponseEntity.status(HttpStatus.OK).body( new ApiResponse<>("success", modules));
@@ -35,12 +35,11 @@ public class ModuleController {
     public ResponseEntity<ApiResponse<Optional<ModuleModel>>> getModuleById(@PathVariable UUID id) {
         Optional<ModuleModel> moduleModel = moduleService.findModuleById(id);
 
-
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("success", moduleModel));
     }
 
     // Create a new module
-    @PostMapping
+    @PostMapping("")
     public ResponseEntity<ApiResponse<ModuleModel>> createModule(@Valid @RequestBody ModuleModel moduleModel) {
         ModuleModel savedModule = moduleService.createModule(moduleModel);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>("success", savedModule));
