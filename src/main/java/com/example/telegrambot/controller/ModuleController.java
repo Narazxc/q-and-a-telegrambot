@@ -4,14 +4,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.example.telegrambot.util.ApiResponse;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import com.example.telegrambot.model.ModuleModel;
 import com.example.telegrambot.service.ModuleService;
+import com.example.telegrambot.util.ApiResponse;
+
+
 
 @RestController
 @RequestMapping("/api/v1/modules")
@@ -49,8 +51,8 @@ public class ModuleController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ModuleModel>> updateModule(@PathVariable UUID id, @RequestBody ModuleModel newModuleData) {
 
-        ModuleModel module = moduleService.updateModule(id, newModuleData);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("success", module));
+        ModuleModel updatedModule = moduleService.updateModule(id, newModuleData);
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("success", updatedModule));
     }
 
     // Delete a module by ID
@@ -58,7 +60,6 @@ public class ModuleController {
     public ResponseEntity<ApiResponse<?>> deleteModule(@PathVariable UUID id) {
 
         moduleService.deleteModule(id);
-
         return ResponseEntity.noContent().build();
     }
 }

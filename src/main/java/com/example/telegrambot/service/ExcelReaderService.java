@@ -1,16 +1,20 @@
 package com.example.telegrambot.service;
 
-import com.example.telegrambot.dto.QAndADTO;
-import com.example.telegrambot.model.ModuleModel;
-import com.example.telegrambot.repository.ModuleRepository;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
+import com.example.telegrambot.dto.QAndADTO;
+import com.example.telegrambot.model.ModuleModel;
+import com.example.telegrambot.repository.ModuleRepository;
 
 
 @Service
@@ -21,8 +25,6 @@ public class ExcelReaderService {
     public ExcelReaderService(ModuleRepository moduleRepository) {
         this.moduleRepository = moduleRepository;
     }
-
-
 
     public List<?> readExcelFile(MultipartFile file) throws IOException {
         List<QAndADTO> questionList = new ArrayList<>();
@@ -67,7 +69,6 @@ public class ExcelReaderService {
                 }
             }
         }
-
 
         return errors.isEmpty() ? questionList : errors;
     }

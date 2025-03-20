@@ -3,8 +3,6 @@ package com.example.telegrambot.controller;
 import java.util.List;
 import java.util.UUID;
 
-import com.example.telegrambot.service.QAndAService;
-import com.example.telegrambot.util.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.telegrambot.dto.QAndADTO;
 import com.example.telegrambot.dto.QAndAResponseDTO;
+import com.example.telegrambot.service.QAndAService;
+import com.example.telegrambot.util.ApiResponse;
 
 @RestController
 @RequestMapping("/api/v1/q-and-a")
@@ -35,6 +35,7 @@ public class QAndAController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    // Get Q and A based on ID
     @GetMapping("/id/{id}")
     public ResponseEntity<ApiResponse<QAndAResponseDTO>> getQAndA(@PathVariable UUID id) {
 
@@ -46,6 +47,7 @@ public class QAndAController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    // Get all Q and A based on module name
     @GetMapping("/modules/{moduleName}")
     public ResponseEntity<ApiResponse<List<QAndAResponseDTO>>> getQuestionsByModuleName(@PathVariable String moduleName) {
 
@@ -59,29 +61,29 @@ public class QAndAController {
 
 
 
-
+    // Create Q and A
     @PostMapping
     public ResponseEntity<ApiResponse<QAndAResponseDTO>> createQuestion(@Valid @RequestBody QAndADTO qAndADTO) {
 
-        QAndAResponseDTO createdQuestion = qAndAService.createQuestion(qAndADTO);
+        QAndAResponseDTO createdQandA = qAndAService.createQAndA(qAndADTO);
         // Return the created question DTO with HTTP status 201 (Created)
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>("success", createdQuestion));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>("success", createdQandA));
     }
 
     // Update an existing Q&A
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<QAndAResponseDTO>> updateQAndA(@PathVariable UUID id, @Valid @RequestBody QAndADTO qAndADTO) {
 
-            QAndAResponseDTO qAndAResponseDTO = qAndAService.updateQAndA(id, qAndADTO);
-            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("success", qAndAResponseDTO));
+        QAndAResponseDTO qAndAResponseDTO = qAndAService.updateQAndA(id, qAndADTO);
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("success", qAndAResponseDTO));
     }
 
     // Delete a Q&A by ID
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<QAndAResponseDTO>> deleteQAndA(@PathVariable UUID id) {
 
-            qAndAService.deleteQAndA(id);
-            return ResponseEntity.noContent().build();
+        qAndAService.deleteQAndA(id);
+        return ResponseEntity.noContent().build();
     }
 
 //    @PostMapping("/bulk-insert")

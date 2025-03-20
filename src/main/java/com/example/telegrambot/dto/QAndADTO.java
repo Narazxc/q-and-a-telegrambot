@@ -1,15 +1,15 @@
 package com.example.telegrambot.dto;
 
-import com.example.telegrambot.model.QAndAModel;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import com.example.telegrambot.model.QAndAModel;
+
 public record QAndADTO(
 
-//        , groups = QAndAModel.class
         @NotBlank(message = "Question code cannot be empty")
         String questionCode,
 

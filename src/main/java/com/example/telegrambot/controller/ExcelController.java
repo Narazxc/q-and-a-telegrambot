@@ -1,19 +1,22 @@
 package com.example.telegrambot.controller;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.telegrambot.dto.QAndADTO;
 import com.example.telegrambot.dto.QAndAResponseDTO;
 import com.example.telegrambot.service.ExcelReaderService;
 import com.example.telegrambot.service.QAndAService;
 import com.example.telegrambot.util.ApiResponse;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/excel")
@@ -31,6 +34,7 @@ public class ExcelController {
     @PostMapping("/upload")
     public ResponseEntity<ApiResponse<?>> uploadExcelFile(@RequestParam("file") MultipartFile file) throws IOException {
 
+        // Check if no file is sent
         if (file.isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("error", "Please upload an Excel file."));
         }

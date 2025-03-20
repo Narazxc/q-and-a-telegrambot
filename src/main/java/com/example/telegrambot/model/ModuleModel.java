@@ -1,13 +1,13 @@
 package com.example.telegrambot.model;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.UUID;
 
 
 @Entity
@@ -93,12 +93,3 @@ public class ModuleModel {
     @Override
     public int hashCode() { return id.hashCode(); }
 }
-//    public List<QAndAModel> getQAndAs() {
-//        return qAndAs;
-//    }
-//
-//    public void setQAndAs(List<QAndAModel> qAndAs) {
-//        this.qAndAs = qAndAs;
-//    }
-
-// Optional: Override toString, equals, and hashCode methods if needed

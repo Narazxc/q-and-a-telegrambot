@@ -1,7 +1,13 @@
 package com.example.telegrambot.service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
 
 import com.example.telegrambot.exception.Module.ModuleNotFoundException;
 import com.example.telegrambot.exception.QAndA.DuplicateQAndACodeException;
@@ -12,8 +18,6 @@ import com.example.telegrambot.model.ModuleModel;
 import com.example.telegrambot.model.QAndAModel;
 import com.example.telegrambot.repository.ModuleRepository;
 import com.example.telegrambot.repository.QAndARepository;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 
 @Service
 public class QAndAService {
@@ -100,9 +104,9 @@ public class QAndAService {
     }
 
     // Save a new Q&A
-    public QAndAModel createQAndA(QAndAModel qAndAModel) {
-        return qAndARepository.save(qAndAModel);
-    }
+//    public QAndAModel createQAndA(QAndAModel qAndAModel) {
+//        return qAndARepository.save(qAndAModel);
+//    }
 
 //    public QAndAResponseDTO createQuestion(QAndADTO qAndADTO) {
 //        // Step 1: Find the Module based on the moduleId
@@ -133,27 +137,27 @@ public class QAndAService {
 //        );
 //    }
 
-    public QAndAResponseDTO createQuestion(QAndADTO qAndADTO) {
-        // Guard clause: Check if a question with the same questionCode already exists
+    public QAndAResponseDTO createQAndA(QAndADTO qAndADTO) {
+        // Step 1: Guard clause: Check if a q and a with the same questionCode already exists
         if (qAndARepository.existsByQuestionCode(qAndADTO.questionCode())) {
             throw new DuplicateQAndACodeException("Question code '" + qAndADTO.questionCode() + "' already exists.");
         }
 
-        // Step 1: Find the Module based on the moduleId
+        // Step 2: Find the Module based on the moduleId
         ModuleModel moduleModel = moduleRepository.findById(qAndADTO.moduleId())
                 .orElseThrow(() -> new ModuleNotFoundException(qAndADTO.moduleId()));
 
-        // Step 2: Create a new QAndAModel instance and set values
+        // Step 3: Create a new QAndAModel instance and set values
         QAndAModel newQuestion = new QAndAModel();
         newQuestion.setQuestionCode(qAndADTO.questionCode());
         newQuestion.setQuestion(qAndADTO.question());
         newQuestion.setAnswer(qAndADTO.answer());
         newQuestion.setModule(moduleModel);  // Set the Module
 
-        // Step 3: Save the new question to the repository
+        // Step 4: Save the new question to the repository
         QAndAModel savedQuestion = qAndARepository.save(newQuestion);
 
-        // Step 4: Map the saved entity to QAndAResponseDTO and return it
+        // Step 5: Map the saved entity to QAndAResponseDTO and return it
         return new QAndAResponseDTO(
                 savedQuestion.getId(),
                 savedQuestion.getQuestionCode(),
@@ -226,12 +230,6 @@ public class QAndAService {
 
     public List<QAndAResponseDTO> createQAndAs(List<QAndADTO> qAndADTOs) {
 
-        // console log
-        System.out.println("List of qAndA dtos:");
-        qAndADTOs.forEach(dto -> System.out.println(dto));
-
-
-        // An array
         List<QAndAModel> entities = new ArrayList<>();
 
         for (QAndADTO dto : qAndADTOs) {
@@ -259,10 +257,6 @@ public class QAndAService {
             entities.add(entity);
         }
 
-        // log entities at the end
-        entities.forEach(en -> System.out.println("log entities :" + en));
-
-
         try {
             // Save all entities
             List<QAndAModel> savedEntities = qAndARepository.saveAll(entities);
@@ -281,8 +275,6 @@ public class QAndAService {
                             entity.getUpdatedAt()
                     ))
                     .collect(Collectors.toList());
-
-            responseDTOs.forEach(res -> System.out.println("res :" + res));
 
             return responseDTOs;
 
