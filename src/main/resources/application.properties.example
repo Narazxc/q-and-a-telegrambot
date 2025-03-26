@@ -1,4 +1,0 @@
-spring.application.name=TelegramBot
-
-# Spring boot profile
-spring.profiles.active=dev
