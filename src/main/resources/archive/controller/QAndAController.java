@@ -50,7 +50,7 @@ public class QAndAController {
     @PostMapping
     public ResponseEntity<ApiResponse<QAndAResponseDTO>> createQuestion(@RequestBody QAndADTO qAndADTO) {
 
-        QAndAResponseDTO createdQAndA = qAndAService.createQAndA(qAndADTO);
+        QAndAResponseDTO createdQAndA = qAndAService.createQAndA(qAndADTO, null);
         // Return the created question DTO with HTTP status 201 (Created)
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>("Success", createdQAndA));
     }

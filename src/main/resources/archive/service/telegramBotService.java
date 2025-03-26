@@ -3,7 +3,6 @@ package com.example.telegrambot.service;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.example.telegrambot.dto.QAndAResponseDTO;
 import com.example.telegrambot.model.ModuleModel;

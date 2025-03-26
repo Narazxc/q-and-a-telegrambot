@@ -1,7 +1,7 @@
 package com.example.telegrambot.config;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.context.annotation.Bean;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Async;
 
@@ -18,6 +18,13 @@ import com.example.telegrambot.service.TelegramBot;
 @Configuration
 public class BotConfig {
 
+    private final TelegramBot telegramBot;
+    private static final Logger logger = LoggerFactory.getLogger(BotConfig.class);
+
+    public BotConfig(TelegramBot telegramBot) {
+        this.telegramBot = telegramBot;
+    }
+
 //    @Bean
 //    public TelegramBotsApi telegramBotsApi(TelegramBot telegramBot) throws TelegramApiException {
 //        TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
@@ -25,12 +32,6 @@ public class BotConfig {
 //        telegramBotsApi.registerBot(telegramBot); // Register the bot
 //        return telegramBotsApi;
 //    }
-    private final TelegramBot telegramBot;
-    private static final Logger logger = LoggerFactory.getLogger(BotConfig.class);
-
-    public BotConfig(TelegramBot telegramBot) {
-        this.telegramBot = telegramBot;
-    }
 
 //    @Async
 //    @PostConstruct // Runs automatically when the application starts

@@ -2,9 +2,6 @@ package com.example.telegrambot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 
 @SpringBootApplication
@@ -15,7 +12,6 @@ public class TelegramBotApplication {
 
 		System.out.println("✅ Telegram bot is running...");
 	}
-
 }
 
 // choose number to select module

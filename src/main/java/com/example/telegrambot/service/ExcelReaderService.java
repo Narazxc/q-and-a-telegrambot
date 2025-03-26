@@ -9,13 +9,13 @@ import java.util.UUID;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.telegrambot.dto.QAndADTO;
 import com.example.telegrambot.model.ModuleModel;
 import com.example.telegrambot.repository.ModuleRepository;
-
 
 @Service
 public class ExcelReaderService {
@@ -62,14 +62,13 @@ public class ExcelReaderService {
                         continue;
                     }
 
-                    questionList.add(new QAndADTO(questionCode, question, answer, null, moduleId));
+                    questionList.add(new QAndADTO(questionCode, question, answer, moduleId));
 
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
             }
         }
-
         return errors.isEmpty() ? questionList : errors;
     }
 
@@ -100,7 +99,6 @@ public class ExcelReaderService {
 
         return modules.get(0).getId(); // Return the first module's ID
     }
-
 }
 
 

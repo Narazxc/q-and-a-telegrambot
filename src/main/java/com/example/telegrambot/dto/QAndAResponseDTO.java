@@ -1,8 +1,7 @@
 package com.example.telegrambot.dto;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.UUID;
+import java.time.OffsetDateTime;
 
 public record QAndAResponseDTO(
         UUID id,
@@ -12,6 +11,7 @@ public record QAndAResponseDTO(
         String module,    // Module name
         UUID moduleId,     // Module ID
         String moduleFullName, // Add fullName here
+        String imagePath,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
 ) {

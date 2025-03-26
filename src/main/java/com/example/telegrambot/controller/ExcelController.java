@@ -2,6 +2,7 @@ package com.example.telegrambot.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,9 +35,35 @@ public class ExcelController {
     @PostMapping("/upload")
     public ResponseEntity<ApiResponse<?>> uploadExcelFile(@RequestParam("file") MultipartFile file) throws IOException {
 
+        // Define allowed MIME types for Excel
+        Set<String> ALLOWED_TYPES = Set.of(
+                "application/vnd.ms-excel",  // .xls
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" // .xlsx
+        );
+
+        // Define allowed file extensions
+        Set<String> ALLOWED_EXTENSIONS = Set.of("xls", "xlsx");
+
+
         // Check if no file is sent
         if (file.isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("error", "Please upload an Excel file."));
+        }
+
+        // Validate file type (MIME type)
+        if (!ALLOWED_TYPES.contains(file.getContentType())) {
+            return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                    .body(new ApiResponse<>("error", "Invalid file type. Please upload an Excel file."));
+        }
+
+        // Validate file extension
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename != null) {
+            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+            if (!ALLOWED_EXTENSIONS.contains(fileExtension)) {
+                return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                        .body(new ApiResponse<>("error", "Invalid file extension. Only .xls and .xlsx are allowed."));
+            }
         }
 
 

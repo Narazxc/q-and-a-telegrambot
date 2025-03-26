@@ -7,10 +7,11 @@ import java.util.UUID;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.telegrambot.model.QAndAModel;
-
+import com.example.telegrambot.dto.QAndAResponseProjection;
 
 @Repository
 public interface QAndARepository extends JpaRepository<QAndAModel, UUID> {
@@ -37,4 +38,7 @@ public interface QAndARepository extends JpaRepository<QAndAModel, UUID> {
     boolean existsByQuestionCode(String questionCode);
 
     boolean existsById(UUID id);
+
+    @Query(value = "SELECT * FROM get_qanda_by_question_code(:questionCode)", nativeQuery = true)
+    Optional<QAndAResponseProjection> findByQuestionCode(@Param("questionCode") String questionCode);
 }

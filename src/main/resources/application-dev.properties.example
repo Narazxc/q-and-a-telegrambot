@@ -10,3 +10,15 @@ spring.datasource.username=
 spring.datasource.password=
 spring.datasource.driver-class-name=org.postgresql.Driver
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+
+# Hibernate (for development only)
+spring.jpa.hibernate.ddl-auto=update
+
+# File upload
+file.upload-dir=uploads
+# 2MB in bytes (2 * 1024 * 1024)
+file.upload.max-size=2097152
+file.upload.allowed-types=image/png,image/jpeg,image/jpg
+
+# App base URL
+app.base-url=http://localhost:8080

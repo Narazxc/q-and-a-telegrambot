@@ -1,15 +1,21 @@
 package com.example.telegrambot.service;
 
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -17,9 +23,13 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import com.example.telegrambot.dto.QAndAResponseDTO;
 import com.example.telegrambot.model.ModuleModel;
 
-
 @Service
 public class TelegramBot extends TelegramLongPollingBot {
+
+    private final ModuleService moduleService;
+    private final QAndAService qAndAService;
+
+    private static final Logger logger = LoggerFactory.getLogger(TelegramBot.class);
 
     @Value("${telegram.bot.username}")
     private String botUsername;
@@ -27,9 +37,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Value("${telegram.bot.token}")
     private String botToken;
 
-    private static final Logger logger = LoggerFactory.getLogger(TelegramBot.class);
-    private final ModuleService moduleService;
-    private final QAndAService qAndAService;
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     public TelegramBot(ModuleService moduleService, QAndAService qAndAService) {
         this.moduleService = moduleService;
@@ -191,8 +200,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
 
-
-
     // Currently in use
     // Automatically split text into multiple message, when exceed maximum size of 4kb or 4096 character
 //    public void sendLongMessage(String chatId, String textMessage) {
@@ -238,12 +245,62 @@ public class TelegramBot extends TelegramLongPollingBot {
 //            start = end + 1; // Move start to the next character after the last split
 //        }
 //    }
+//    public void sendLongMessage(String chatId, String textMessage) {
+//        int limit = 4096; // Telegram's message limit
+//        int start = 0;
+//
+//        String answer = qAndAService.getAnswerByQuestionCode(textMessage);
+//        String question = qAndAService.getQuestionByQuestionCode(textMessage);
+//
+//        if (answer.isEmpty() && question.isEmpty()) {
+//            sendMessage(chatId, "No answer found for the question with question code: " + textMessage);
+//            return;
+//        }
+//
+//        String qAndA = MessageFormat.format(
+//                "*សំណួរ*: {0}\n\n*ចម្លេីយ*: {1}",
+//                escapeMarkdownV2(question),
+//                escapeMarkdownV2(answer)
+//        );
+//
+//        // Fix: Use qAndA instead of message (which is undefined)
+//        while (start < qAndA.length()) {
+//            int end = Math.min(start + limit, qAndA.length());
+//
+//            // Fix: Ensure we don't break MarkdownV2 formatting
+//            if (end < qAndA.length()) {
+//                int lastSpace = qAndA.lastIndexOf(" ", end);
+//                int lastNewLine = qAndA.lastIndexOf("\n", end);
+//                int splitPoint = Math.max(lastSpace, lastNewLine);
+//
+//                if (splitPoint > start) {
+//                    end = splitPoint; // Move end to the last space/newline before limit
+//                }
+//            }
+//
+//            String chunk = qAndA.substring(start, end);
+//
+//            SendMessage sendMessage = new SendMessage(chatId, chunk);
+//            sendMessage.setParseMode("MarkdownV2"); // Preserve Markdown formatting
+//
+//            try {
+//                execute(sendMessage);
+//            } catch (TelegramApiException e) {
+//                e.printStackTrace();
+//            }
+//
+//            start = end + 1; // Move start to the next chunk
+//        }
+//    }
+
     public void sendLongMessage(String chatId, String textMessage) {
-        int limit = 4096; // Telegram's message limit
+        int TELEGRAM_MESSAGE_SIZE_LIMIT = 4096; // Telegram's message size limit 4KB
         int start = 0;
 
         String answer = qAndAService.getAnswerByQuestionCode(textMessage);
         String question = qAndAService.getQuestionByQuestionCode(textMessage);
+        Optional<QAndAResponseDTO> qanda = qAndAService.getQAndAByQuestionCode(textMessage);
+
 
         if (answer.isEmpty() && question.isEmpty()) {
             sendMessage(chatId, "No answer found for the question with question code: " + textMessage);
@@ -256,11 +313,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                 escapeMarkdownV2(answer)
         );
 
-        // Fix: Use qAndA instead of message (which is undefined)
+        // Continue with sending the text message
         while (start < qAndA.length()) {
-            int end = Math.min(start + limit, qAndA.length());
+            int end = Math.min(start + TELEGRAM_MESSAGE_SIZE_LIMIT, qAndA.length());
 
-            // Fix: Ensure we don't break MarkdownV2 formatting
+            // Ensure we don't break MarkdownV2 formatting
             if (end < qAndA.length()) {
                 int lastSpace = qAndA.lastIndexOf(" ", end);
                 int lastNewLine = qAndA.lastIndexOf("\n", end);
@@ -278,6 +335,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             try {
                 execute(sendMessage);
+                sendImage(qanda, chatId, baseUrl);
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
@@ -287,4 +345,42 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
 
+
+    private void sendImage(Optional<QAndAResponseDTO> qanda, String chatId, String baseUrl) {
+
+        if (qanda.isPresent()) {
+            QAndAResponseDTO dto = qanda.get();
+
+            // Check if imagePath is provided and send photo if available
+            if (dto.imagePath() != null && !dto.imagePath().isEmpty()) {
+                try {
+
+                    // Get the path from the database
+                    String dbImagePath = dto.imagePath();
+
+                    // Fix the path separators for URL usage (replace backslashes with forward slashes)
+                    String normalizedPath = dbImagePath.replace('\\', '/');
+
+                    // Construct the full URL
+                    String fullImageUrl = baseUrl + normalizedPath;
+                    System.out.println("Full image url: " + fullImageUrl);
+                    System.out.println("Attempting to send photo from URL: " + fullImageUrl);
+
+
+                    InputFile inputFile = new InputFile(new File(normalizedPath));  // Create InputFile from File
+
+                    SendPhoto sendPhoto = new SendPhoto();
+                    sendPhoto.setChatId(chatId);
+                    sendPhoto.setPhoto(inputFile);  // Set the InputFile as the photo
+
+                    // Send the photo via Telegram Bot API
+                    execute(sendPhoto);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            System.out.println("No QAndA data found.");
+        }
+    }
 }

@@ -3,11 +3,16 @@ package com.example.telegrambot.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.UUID;
+
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.telegrambot.exception.Module.ModuleNotFoundException;
 import com.example.telegrambot.exception.QAndA.DuplicateQAndACodeException;
@@ -18,6 +23,8 @@ import com.example.telegrambot.model.ModuleModel;
 import com.example.telegrambot.model.QAndAModel;
 import com.example.telegrambot.repository.ModuleRepository;
 import com.example.telegrambot.repository.QAndARepository;
+import com.example.telegrambot.model.AnswerImageModel;
+import com.example.telegrambot.util.FileInfo;
 
 @Service
 public class QAndAService {
@@ -25,9 +32,16 @@ public class QAndAService {
     private final QAndARepository qAndARepository;
     private final ModuleRepository moduleRepository;
 
-    public QAndAService(QAndARepository qAndARepository, ModuleRepository moduleRepository) {
+    // File
+    private final FileStorageService fileStorageService; // contain method to store file
+
+    public QAndAService(QAndARepository qAndARepository,
+                        ModuleRepository moduleRepository,
+                        FileStorageService fileStorageService
+    ) {
         this.qAndARepository = qAndARepository;
         this.moduleRepository = moduleRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     // Fetch and map QAndAModels to QAndAResponseDTO
@@ -44,10 +58,10 @@ public class QAndAService {
                         (q.getModule() != null) ? q.getModule().getName() : "", // Handle null module
                         (q.getModule() != null) ? q.getModule().getId() : null,  // Handle null module_id
                         (q.getModule() != null) ? q.getModule().getFullName() : "",
+                        (q.getAnswerImageModel() != null) ? q.getAnswerImageModel().getImagePath() : "", // ✅ Fix NPE risk
                         q.getCreatedAt(),
                         q.getUpdatedAt()
                 ))
-
                 .collect(Collectors.toList());
 
         return QAndAResponseDTOs;
@@ -63,6 +77,27 @@ public class QAndAService {
                 .orElse("");
     }
 
+    public Optional<QAndAResponseDTO> getQAndAByQuestionCode(String questionCode) {
+        return qAndARepository.findByQuestionCode(questionCode)
+                .map(q -> new QAndAResponseDTO(
+                        q.getId(),
+                        q.getQuestionCode(),
+                        q.getQuestion(),
+                        q.getAnswer(),
+                        q.getModule(),
+                        q.getModuleId(),
+                        q.getModuleFullName(),
+                        q.getImagePath(),
+                        convertToOffsetDateTime(q.getCreatedAt()),
+                        convertToOffsetDateTime(q.getUpdatedAt())
+                ));
+    }
+
+    // Converts Instant to OffsetDateTime while keeping the correct format
+    private OffsetDateTime convertToOffsetDateTime(Instant instant) {
+        return instant != null ? instant.atOffset(ZoneOffset.UTC) : null; // Change to your required offset
+    }
+
     public QAndAResponseDTO getQAndA(UUID id) {
         QAndAModel qAndA = qAndARepository.findById(id)
                 .orElseThrow(() -> new QAndANotFoundException(id));
@@ -76,6 +111,7 @@ public class QAndAService {
                 (qAndA.getModule() != null) ? qAndA.getModule().getName() : "", // Handle null module
                 (qAndA.getModule() != null) ? qAndA.getModule().getId() : null,  // Handle null module_id
                 (qAndA.getModule() != null) ? qAndA.getModule().getFullName() : "",
+                null,
                 qAndA.getCreatedAt(),
                 qAndA.getUpdatedAt()
 
@@ -96,6 +132,7 @@ public class QAndAService {
                         (q.getModule() != null) ? q.getModule().getName() : "", // Handle null module
                         (q.getModule() != null) ? q.getModule().getId() : null,  // Handle null module_id
                         (q.getModule() != null) ? q.getModule().getFullName() : "",
+                        null,
                         q.getCreatedAt(),
                         q.getUpdatedAt()
                 ))
@@ -137,7 +174,45 @@ public class QAndAService {
 //        );
 //    }
 
-    public QAndAResponseDTO createQAndA(QAndADTO qAndADTO) {
+////     Working
+//    public QAndAResponseDTO createQAndA(QAndADTO qAndADTO,  MultipartFile file) {
+//        // Step 1: Guard clause: Check if a q and a with the same questionCode already exists
+//        if (qAndARepository.existsByQuestionCode(qAndADTO.questionCode())) {
+//            throw new DuplicateQAndACodeException("Question code '" + qAndADTO.questionCode() + "' already exists.");
+//        }
+//
+//        // Step 2: Find the Module based on the moduleId
+//        ModuleModel moduleModel = moduleRepository.findById(qAndADTO.moduleId())
+//                .orElseThrow(() -> new ModuleNotFoundException(qAndADTO.moduleId()));
+//
+//        // Step 3: Create a new QAndAModel instance and set values
+//        QAndAModel newQuestion = new QAndAModel();
+//        newQuestion.setQuestionCode(qAndADTO.questionCode());
+//        newQuestion.setQuestion(qAndADTO.question());
+//        newQuestion.setAnswer(qAndADTO.answer());
+//        newQuestion.setModule(moduleModel);  // Set the Module
+//
+//        // Step 4: Save the new question to the repository
+//        QAndAModel savedQuestion = qAndARepository.save(newQuestion);
+//
+//        // Step 5: Map the saved entity to QAndAResponseDTO and return it
+//        return new QAndAResponseDTO(
+//                savedQuestion.getId(),
+//                savedQuestion.getQuestionCode(),
+//                savedQuestion.getQuestion(),
+//                savedQuestion.getAnswer(),
+//                savedQuestion.getModule().getName(),
+//                savedQuestion.getModule().getId(),
+//                savedQuestion.getModule().getFullName(),
+//                savedQuestion.getCreatedAt(),
+//                savedQuestion.getUpdatedAt()
+//        );
+//    }
+
+
+
+//    @Transactional
+    public QAndAResponseDTO createQAndA(QAndADTO qAndADTO, MultipartFile file) {
         // Step 1: Guard clause: Check if a q and a with the same questionCode already exists
         if (qAndARepository.existsByQuestionCode(qAndADTO.questionCode())) {
             throw new DuplicateQAndACodeException("Question code '" + qAndADTO.questionCode() + "' already exists.");
@@ -152,28 +227,58 @@ public class QAndAService {
         newQuestion.setQuestionCode(qAndADTO.questionCode());
         newQuestion.setQuestion(qAndADTO.question());
         newQuestion.setAnswer(qAndADTO.answer());
-        newQuestion.setModule(moduleModel);  // Set the Module
+        newQuestion.setModuleModel(moduleModel); // ADD THIS LINE
 
-        // Step 4: Save the new question to the repository
+        // Save the QAndA first to get its ID
         QAndAModel savedQuestion = qAndARepository.save(newQuestion);
 
+        // Step 4: Handle file if present
+        if (file != null && !file.isEmpty()) {
+            // Save file and get path
+            FileInfo fileInfo = fileStorageService.storeFileAndGetInfo(file);
+
+            // name
+            // path
+            // size
+            // type
+            // extension
+
+            // Create and set AnswerImageModel
+            AnswerImageModel answerImage = new AnswerImageModel();
+            answerImage.setImageName(fileInfo.getFileName());
+            answerImage.setImagePath(fileInfo.getFilePath());
+            answerImage.setImageSize(fileInfo.getFileSize());
+            answerImage.setImageType(fileInfo.getFileType());
+            answerImage.setImageExtension(fileInfo.getFileExtension());
+            answerImage.setqAndA(savedQuestion);  // Link to the QAndA
+
+
+            // Update the QAndA with the image reference
+            savedQuestion.setAnswerImageModel(answerImage);
+            savedQuestion = qAndARepository.save(savedQuestion);
+        }
+
         // Step 5: Map the saved entity to QAndAResponseDTO and return it
-        return new QAndAResponseDTO(
+        QAndAResponseDTO responseDTO = new QAndAResponseDTO(
                 savedQuestion.getId(),
                 savedQuestion.getQuestionCode(),
                 savedQuestion.getQuestion(),
                 savedQuestion.getAnswer(),
-                savedQuestion.getModule().getName(),
-                savedQuestion.getModule().getId(),
-                savedQuestion.getModule().getFullName(),
+                savedQuestion.getModuleModel().getName(),
+                savedQuestion.getModuleModel().getId(),
+                savedQuestion.getModuleModel().getFullName(),
+                null,
                 savedQuestion.getCreatedAt(),
                 savedQuestion.getUpdatedAt()
         );
+
+        return responseDTO;
     }
 
-    public QAndAResponseDTO updateQAndA(UUID id, QAndADTO request){
-        ;
 
+
+
+    public QAndAResponseDTO updateQAndA(UUID id, QAndADTO request){
         // 1. Find to see if the id exist
         QAndAModel existingQAndA = qAndARepository.findById(id)
                 .orElseThrow(() -> new QAndANotFoundException(id));
@@ -211,6 +316,7 @@ public class QAndAService {
                 updatedQAndA.getModule().getName(),
                 updatedQAndA.getModule().getId(),
                 updatedQAndA.getModule().getFullName(),
+                null,
                 updatedQAndA.getCreatedAt(),
                 updatedQAndA.getUpdatedAt()
         );
@@ -271,6 +377,7 @@ public class QAndAService {
                             (entity.getModule() != null) ? entity.getModule().getName() : "",
                             entity.getModule() != null ? entity.getModule().getId() : null,
                             entity.getModule() != null ? entity.getModule().getFullName() : "",
+                            null,
                             entity.getCreatedAt(),
                             entity.getUpdatedAt()
                     ))

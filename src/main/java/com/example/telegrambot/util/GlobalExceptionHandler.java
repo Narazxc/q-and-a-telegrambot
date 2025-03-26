@@ -19,10 +19,6 @@ import com.example.telegrambot.exception.Module.ModuleNotFoundException;
 import com.example.telegrambot.exception.QAndA.DuplicateQAndACodeException;
 import com.example.telegrambot.exception.QAndA.QAndANotFoundException;
 
-
-
-
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
